@@ -1,4 +1,7 @@
+import {IDateForGenerateWeek} from '../interfaces'
+
 const DaysInMounth = [31, 28, 31, 31, 31, 31, 31, 31, 30, 31, 31, 31]
+
 
 const upCurrentMonth = (currentMounth: number) => {
     if(currentMounth == 12) { currentMounth = 1;}
@@ -9,7 +12,7 @@ const upCurrentMonth = (currentMounth: number) => {
 export const GenerateDays = (currentDate: number, currentMounth: number) => {
     const maxDays:number = 7
     const DaysInCurrent:number = currentDate + maxDays
-    let DateArray = new Array(maxDays)
+    let DateArray:Array<IDateForGenerateWeek> = new Array(maxDays)
 
     if(DaysInCurrent <= DaysInMounth[currentMounth - 1])
     {
@@ -17,7 +20,7 @@ export const GenerateDays = (currentDate: number, currentMounth: number) => {
         {
             DateArray[i] = {
                 date: currentDate,
-                mounth: currentMounth
+                mounth: currentMounth,
             }
             currentDate++
         }

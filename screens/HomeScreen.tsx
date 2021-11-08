@@ -1,18 +1,21 @@
 import { conditionalExpression } from '@babel/types'
 import React, { useState } from 'react'
-import { StyleSheet, StatusBar, FlatList, Animated } from 'react-native'
-import { Surface } from 'react-native-paper';
+import { StyleSheet, StatusBar, FlatList, Animated, Image, ImageBackground, View as DefaultView, Text as DefaultText, TouchableOpacity, TouchableWithoutFeedback } from 'react-native'
 
 import { Text, View } from '../components/Themed'
 import { RootTabScreenProps } from '../types'
+
 
 import { GenerateDays } from '../components/GenerateDays'
 
 import GetNameMounth from '../constants/Mounth'
 import Colors from '../constants/Colors'
 
-import { IMedical } from '../interfaces'
+import { IDateForGenerateWeek, IMedical } from '../interfaces'
 import { State } from '../Redux'
+import Separator from '../components/Separator'
+
+const source = require('../src/stacked-waves-haikei.png')
 
 const STATUS_BAR = StatusBar.currentHeight || 24
 
@@ -23,19 +26,34 @@ const date = time.getDate()
 
 const HomeScreen = ({ navigation }: RootTabScreenProps<'TabHome'>) => {
 
-    let days = GenerateDays(date, mounth)
+    let days:Array<IDateForGenerateWeek> = GenerateDays(date, mounth)
 
     const [currentCheckDay, setCurrentCheckDay] = React.useState(days[0])
     const [currentCheckMounth, setCurrentCheckMounth] = React.useState(days[0])
-
+  
     const todayMedicals = State.medical.filter(med =>
         med.whichDayNeedUse === currentCheckDay.date &&
         med.whichMounthNeedUse === currentCheckMounth.mounth
     )
 
+    
+
+    const [refFlatList, setRefFlatList] = useState<Animated.FlatList<IDateForGenerateWeek> | null>()
+    const [currentIndex, setCurrentIndex] = useState(0)
+
+    const getItemLayout = (data: IDateForGenerateWeek[] | null | undefined, index: number) => {
+        return {length: Colors.day.width, offset: Colors.day.width * index, index}
+    }
+
+    const onClickHandler = (item:IDateForGenerateWeek, index:number):void => {
+        setCurrentCheckDay(days[index])
+        setCurrentCheckMounth(days[index])
+        setCurrentIndex(index)
+        
+        refFlatList.scrollToIndex({animated: true, index: currentIndex})
+    }
 
     const scrollX = React.useRef(new Animated.Value(0)).current;
-    
 
     return (
         <View style={styles.container}>
@@ -55,9 +73,11 @@ const HomeScreen = ({ navigation }: RootTabScreenProps<'TabHome'>) => {
                         initialNumToRender={20}
                         maxToRenderPerBatch={20}
                         snapToInterval={Colors.day.width}
-                        onScroll={Animated.event(
-                            [{nativeEvent: {contentOffset: {x: scrollX}}}],
-                            {useNativeDriver: true}
+                        getItemLayout={getItemLayout}
+                        ref={(ref) => setRefFlatList(ref)}
+                        onScroll={Animated.event( 
+                            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                            { useNativeDriver: true }
                         )}
                         onMomentumScrollEnd={ev => {
                             const index = Math.round(ev.nativeEvent.contentOffset.x / Colors.day.width)
@@ -82,7 +102,10 @@ const HomeScreen = ({ navigation }: RootTabScreenProps<'TabHome'>) => {
                                 outputRange: [0.7, 1, 0.7]
                             })
                             return (
-                                <View style={styles.day}>
+                                <TouchableOpacity 
+                                    onPress={() => onClickHandler(item, index)}
+                                    style={styles.day}
+                                >
                                     <Animated.Text
                                         style={[styles.dayText, {
                                             opacity,
@@ -90,9 +113,9 @@ const HomeScreen = ({ navigation }: RootTabScreenProps<'TabHome'>) => {
                                                 scale
                                             }]
                                         }]}>
-                                        {item.date}
+                                        <Text>{item.date}</Text>
                                     </Animated.Text>
-                                </View>
+                                </TouchableOpacity>
                             )
                         }}
                     />
@@ -106,11 +129,11 @@ const HomeScreen = ({ navigation }: RootTabScreenProps<'TabHome'>) => {
                         showsVerticalScrollIndicator={false}
                         renderItem={({ item }) => (
                             <View>
-                                {item.whichDayNeedUse ?
+                                {item ?
                                     <View style={styles.medicalItem}>
-                                        <View lightColor={"rgba(255,255,255,1)"} darkColor={"rgba(255,255,255,0.0)"} style={styles.wrapperInfo}>
+                                        <View style={styles.wrapperInfo} darkColor="rgba(0,0,0,0)">
                                             <Text style={styles.name}>{item.name}</Text>
-                                            <View style={styles.wrapperHowMuch} lightColor={"rgba(255,255,255,1)"} darkColor={"rgba(255,255,255,0.0)"}>
+                                            <View style={styles.wrapperHowMuch} darkColor="rgba(0,0,0,0)">
                                                 <Text style={styles.howMuchAsk} lightColor={"rgba(255,255,255,0)"} darkColor={"rgba(255,255,255,1)"}>Кол-во:</Text>
                                                 <Text style={styles.howMuch}>{item.howMuchNeedUse}</Text>
                                             </View>
@@ -121,14 +144,31 @@ const HomeScreen = ({ navigation }: RootTabScreenProps<'TabHome'>) => {
                         )}
                     />
                 </View>
+                <Separator />
             </View>
         </View>
+
     )
 }
 
 const styles = StyleSheet.create({
+    absolute: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+    },
+    backgroundContainer: {
+        flex: 1,
+
+        width: '100%', // applied to Image
+        height: '100%',
+
+    },
     container: {
         flex: 1,
+        width: '100%',
         paddingTop: STATUS_BAR,
     },
     center: {
@@ -159,14 +199,14 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     medicalItem: {
-
         borderBottomWidth: 1,
+        backgroundColor: 'rgba(255,255,255, 0.1)',
         borderColor: 'rgba(215, 219, 221, 1)',
         marginHorizontal: 20,
         paddingHorizontal: 25,
         paddingBottom: 15,
         marginBottom: 15,
-
+        borderRadius: 10,
     },
     wrapperInfo: {
         flexDirection: 'row',
