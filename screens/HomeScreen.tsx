@@ -30,7 +30,7 @@ const HomeScreen = ({ navigation }: RootTabScreenProps<'TabHome'>) => {
 
     const [currentCheckDay, setCurrentCheckDay] = React.useState(days[0])
     const [currentCheckMounth, setCurrentCheckMounth] = React.useState(days[0])
-  
+    console.log(State.medical)
     const todayMedicals = State.medical.filter(med =>
         med.whichDayNeedUse === currentCheckDay.date &&
         med.whichMounthNeedUse === currentCheckMounth.mounth

@@ -2,13 +2,14 @@ export interface IMedical {
     name: string;
     timeWhenNeedUse?: Date;
     timeWhenAdded?: Date;
-    transcription?: string;
+    selected?: number | null;
+    transcription?: string | null;
     howMuchNeedUse: number;
-    whichDayNeedUse: number;
-    whichMounthNeedUse: number;
+    daysNeedUse: IDateForGenerateWeek[];
 }
 
 export interface IDateForGenerateWeek {
     date: number;
     mounth: number;
 } 
+

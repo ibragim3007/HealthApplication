@@ -9,8 +9,8 @@ const upCurrentMonth = (currentMounth: number) => {
     return currentMounth;
 }
 
-export const GenerateDays = (currentDate: number, currentMounth: number) => {
-    const maxDays:number = 7
+export const GenerateDays = (currentDate: number, currentMounth: number, maxDays: number = 7) => {
+    
     const DaysInCurrent:number = currentDate + maxDays
     let DateArray:Array<IDateForGenerateWeek> = new Array(maxDays)
 
